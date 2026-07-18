@@ -163,8 +163,8 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Quantity & Actions */}
-          <div className="mt-6 flex items-center gap-4">
-            <div className="flex items-center rounded-xl border border-border">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center self-start rounded-xl border border-border">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
                 className="flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground"
@@ -182,15 +182,14 @@ export default function ProductDetailPage() {
             <Button className="h-11 flex-1 bg-warm-orange-gradient">
               Buy Now
             </Button>
-            <Button variant="outline" className="h-11">
+            <Button variant="outline" className="h-11 sm:flex-none">
               Request Quote
             </Button>
           </div>
 
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Button
               variant="outline"
-              className="flex-1"
               onClick={() => setLiked(!liked)}
             >
               <Heart className={cn('mr-1.5 h-4 w-4', liked && 'fill-destructive text-destructive')} />
@@ -198,16 +197,15 @@ export default function ProductDetailPage() {
             </Button>
             <Button
               variant="outline"
-              className="flex-1"
               onClick={() => setSaved(!saved)}
             >
               <Bookmark className={cn('mr-1.5 h-4 w-4', saved && 'fill-primary text-primary')} />
               Save
             </Button>
-            <Button variant="outline" className="flex-1">
+            <Button variant="outline">
               <Share2 className="mr-1.5 h-4 w-4" /> Share
             </Button>
-            <Button variant="outline" className="flex-1 text-destructive">
+            <Button variant="outline" className="text-destructive">
               <Flag className="mr-1.5 h-4 w-4" /> Report
             </Button>
           </div>

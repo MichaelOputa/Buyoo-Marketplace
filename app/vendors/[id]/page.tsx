@@ -138,7 +138,7 @@ export default function VendorProfilePage() {
       {/* Tabs */}
       <div className="mt-6 px-4 md:px-0">
         <Tabs defaultValue="products">
-          <TabsList className="w-full justify-start">
+          <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide">
             <TabsTrigger value="products"><Package className="mr-1.5 h-4 w-4" /> Products</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="gallery"><ImageIcon className="mr-1.5 h-4 w-4" /> Gallery</TabsTrigger>

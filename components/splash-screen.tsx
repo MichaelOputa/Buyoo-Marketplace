@@ -105,7 +105,7 @@ export function SplashScreen() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 120, damping: 14 }}
           >
-            <LogoMark className="h-24 w-24 drop-shadow-xl" />
+            <LogoMark className="h-20 w-20 drop-shadow-xl sm:h-24 sm:w-24" />
           </motion.div>
 
           <motion.div

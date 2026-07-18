@@ -137,7 +137,7 @@ export default function SearchPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex gap-2 overflow-x-auto scrollbar-hide">
         {[
           { id: 'all', label: 'All', icon: Search },
           { id: 'products', label: 'Products', icon: Package },
@@ -148,7 +148,7 @@ export default function SearchPage() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={cn(
-              'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+              'flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors',
               activeTab === tab.id ? 'bg-warm-orange-gradient text-white' : 'bg-muted text-muted-foreground hover:bg-muted/70'
             )}
           >
