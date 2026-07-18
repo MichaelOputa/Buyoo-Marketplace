@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /messaging
+
+Sitemap: https://buyoo.com/sitemap.xml
