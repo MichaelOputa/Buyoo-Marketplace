@@ -1,0 +1,19 @@
+<svg width="180" height="180" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" rx="22" fill="#14213D" />
+  <defs>
+    <linearGradient id="buyooGrad" x1="80" y1="5" x2="10" y2="105" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF6B00" />
+      <stop offset="35%" stop-color="#FFA500" />
+      <stop offset="65%" stop-color="#8BC34A" />
+      <stop offset="100%" stop-color="#34C759" />
+    </linearGradient>
+  </defs>
+  <rect x="12" y="8" width="18" height="84" rx="6" fill="url(#buyooGrad)" />
+  <path d="M29 8 Q30 8 42 8 Q68 8 68 30 Q68 52 42 52 Q30 52 29 52 Z" fill="url(#buyooGrad)" />
+  <path d="M29 52 Q30 52 45 52 Q76 52 76 75 Q76 92 45 92 Q30 92 29 92 Z" fill="url(#buyooGrad)" />
+  <rect x="37" y="22" width="20" height="18" rx="2.5" fill="white" />
+  <path d="M42 22 Q42 17 47 17 Q52 17 52 22" stroke="white" stroke-width="2.8" stroke-linecap="round" fill="none" />
+  <circle cx="47" cy="70" r="10" fill="white" />
+  <path d="M41 76 Q47 90 47 90 Q47 90 53 76" fill="white" />
+  <circle cx="47" cy="70" r="4" fill="url(#buyooGrad)" />
+</svg>
