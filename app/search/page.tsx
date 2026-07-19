@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Navigation,
   Phone,
+  Sparkles,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,21 @@ import {
   formatMarketDays,
 } from '@/lib/data';
 import { cn } from '@/lib/utils';
+
+function CategoryIcon({ name }: { name: string }) {
+  const icons: Record<string, any> = {
+    Smartphone: Search,
+    Shirt: Store,
+    Car: Package,
+    Sprout: Star,
+    UtensilsCrossed: TrendingUp,
+    Home: MapPin,
+    HeartPulse: Sparkles,
+    Wrench: Wrench,
+  };
+  const Icon = icons[name] || Search;
+  return <Icon className="h-6 w-6" />;
+}
 
 const searchSuggestions = [
   'iPhone 15', 'Toyota Camry', 'Ankara gown', 'Organic vegetables',
@@ -130,6 +146,8 @@ export default function SearchPage() {
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
   }
+
+  const hasQueryOrFilters = query || selectedCategories.length > 0 || selectedRating > 0 || selectedLocation || priceRange[0] > 0 || priceRange[1] < 10000000;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
@@ -298,6 +316,10 @@ export default function SearchPage() {
 
         {/* Results */}
         <div>
+          {!hasQueryOrFilters ? (
+            <DiscoverLanding />
+          ) : (
+            <>
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {results.products.length + results.vendors.length + results.markets.length + results.riders.length + results.errands.length} results
@@ -487,8 +509,191 @@ export default function SearchPage() {
               </p>
             </div>
           )}
+            </>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DiscoverLanding() {
+  const trendingSearches = ['Fresh food', 'Smartphones', 'Fashion', 'Errand runner', 'Itam Market', 'Bike delivery'];
+  const featuredProducts = products.filter((p) => p.trending || p.sponsored).slice(0, 4);
+  const topRiders = [...riders].sort((a, b) => b.rating - a.rating).slice(0, 3);
+  const topErrands = [...errandPros].sort((a, b) => b.rating - a.rating).slice(0, 3);
+  const topMarkets = [...markets].sort((a, b) => b.rating - a.rating).slice(0, 3);
+
+  return (
+    <div className="space-y-10">
+      {/* Trending searches */}
+      <section>
+        <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+          <TrendingUp className="h-5 w-5 text-primary" /> Trending searches
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {trendingSearches.map((term) => (
+            <Link key={term} href={`/search?q=${encodeURIComponent(term)}`}>
+              <Badge variant="secondary" className="cursor-pointer bg-muted/60 px-3 py-1.5 text-sm hover:bg-primary/10 hover:text-primary">
+                {term}
+              </Badge>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Browse by category */}
+      <section>
+        <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+          <Store className="h-5 w-5 text-primary" /> Browse by category
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {categories.slice(0, 8).map((cat) => (
+            <Link key={cat.name} href={`/search?cat=${encodeURIComponent(cat.name)}`}>
+              <Card className="flex items-center gap-3 p-3 transition-all hover:shadow-md hover:border-primary/30">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${cat.color}`}>
+                  <CategoryIcon name={cat.icon} />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-navy dark:text-white">{cat.name}</p>
+                  <p className="text-xs text-muted-foreground">{cat.count}</p>
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Featured products */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+            <Package className="h-5 w-5 text-primary" /> Featured products
+          </h2>
+          <Link href="/marketplace" className="text-sm text-primary hover:underline">View all</Link>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          {featuredProducts.map((product, i) => (
+            <motion.div key={product.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <Link href={`/marketplace/${product.id}`}>
+                <Card className="group overflow-hidden transition-all hover:shadow-lg hover:border-primary/30">
+                  <div className="relative aspect-square overflow-hidden">
+                    <img src={product.images[0]} alt={product.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    {product.sponsored && (
+                      <Badge className="absolute left-2 top-2 bg-warm-orange-gradient text-white">Sponsored</Badge>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h3 className="truncate text-sm font-medium text-navy dark:text-white">{product.title}</h3>
+                    <p className="mt-1 text-sm font-bold text-primary">{formatPrice(product.price, product.currency)}</p>
+                    <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      {product.rating} ({product.reviewCount})
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Nearby markets */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+            <MapPin className="h-5 w-5 text-primary" /> Nearby markets
+          </h2>
+          <Link href="/nearby" className="text-sm text-primary hover:underline">Explore nearby</Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {topMarkets.map((market, i) => (
+            <motion.div key={market.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <Link href="/nearby">
+                <Card className="overflow-hidden transition-all hover:shadow-lg">
+                  <div className="relative flex h-24 items-center justify-center bg-warm-orange-gradient">
+                    <MapPin className="h-8 w-8 text-white/90" />
+                    <div className="absolute bottom-2 left-3">
+                      <h3 className="font-semibold text-white">{market.name}</h3>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Navigation className="h-3 w-3" /> {market.distanceKm} km · {market.city}
+                    </p>
+                    <div className="mt-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1 text-xs">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> {market.rating}
+                      </span>
+                      <Badge className={isMarketOpenNow(market) ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}>
+                        {isMarketOpenNow(market) ? 'Open now' : 'Closed'}
+                      </Badge>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Top riders + errand pros */}
+      <section>
+        <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+          <Sparkles className="h-5 w-5 text-primary" /> Top-rated near you
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {topRiders.map((rider, i) => (
+            <motion.div key={`r-${rider.id}`} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <Link href="/nearby">
+                <Card className="flex items-center gap-3 p-4 transition-all hover:shadow-lg">
+                  <img src={rider.avatar} alt={rider.name} className="h-12 w-12 rounded-xl object-cover" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-navy dark:text-white">{rider.name}</h3>
+                    <p className="text-xs text-muted-foreground">{rider.vehicle} · {rider.city}</p>
+                    <div className="mt-1 flex items-center gap-2 text-xs">
+                      <span className="flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> {rider.rating}
+                      </span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="text-muted-foreground">{formatCount(rider.deliveries)} deliveries</span>
+                    </div>
+                  </div>
+                  <Badge className={rider.available ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}>
+                    {rider.available ? 'Available' : 'Busy'}
+                  </Badge>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+          {topErrands.map((pro, i) => (
+            <motion.div key={`e-${pro.id}`} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 3) * 0.05 }}>
+              <Link href="/nearby">
+                <Card className="flex items-center gap-3 p-4 transition-all hover:shadow-lg">
+                  <img src={pro.avatar} alt={pro.name} className="h-12 w-12 rounded-xl object-cover" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-sm font-semibold text-navy dark:text-white">{pro.name}</h3>
+                      <VerifiedBadge className="h-3 w-3" />
+                    </div>
+                    <p className="text-xs text-primary">{pro.specialty}</p>
+                    <div className="mt-1 flex items-center gap-2 text-xs">
+                      <span className="flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> {pro.rating}
+                      </span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="text-muted-foreground">{formatCount(pro.tasks)} tasks</span>
+                    </div>
+                  </div>
+                  <Badge className={pro.available ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}>
+                    {pro.available ? 'Available' : 'Busy'}
+                  </Badge>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
