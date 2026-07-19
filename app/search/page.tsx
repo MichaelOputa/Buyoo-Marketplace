@@ -14,6 +14,10 @@ import {
   Store,
   Package,
   Wrench,
+  Bike,
+  ShoppingBag,
+  Navigation,
+  Phone,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,7 +35,19 @@ import {
 } from '@/components/ui/select';
 import { VerifiedBadge } from '@/components/verified-badge';
 import { MarketplaceCard } from '@/components/marketplace-card';
-import { products, vendors, categories, getVendorById, formatPrice, formatCount } from '@/lib/data';
+import {
+  products,
+  vendors,
+  categories,
+  riders,
+  errandPros,
+  markets,
+  getVendorById,
+  formatPrice,
+  formatCount,
+  isMarketOpenNow,
+  formatMarketDays,
+} from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 const searchSuggestions = [
@@ -44,7 +60,7 @@ export default function SearchPage() {
   const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'products' | 'vendors' | 'services'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'products' | 'vendors' | 'services' | 'markets' | 'riders' | 'errands'>('all');
   const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState(0);
@@ -64,11 +80,35 @@ export default function SearchPage() {
 
     let filteredVendors = vendors.filter((v) => {
       if (query && !v.name.toLowerCase().includes(query.toLowerCase()) && !v.description.toLowerCase().includes(query.toLowerCase()) && !v.category.toLowerCase().includes(query.toLowerCase())) return false;
-      if (activeTab === 'products') return false;
+      if (activeTab === 'products' || activeTab === 'markets' || activeTab === 'riders' || activeTab === 'errands') return false;
       if (activeTab === 'services' && v.category !== 'Services') return false;
       if (selectedCategories.length > 0 && !selectedCategories.includes(v.category)) return false;
       if (selectedRating > 0 && v.rating < selectedRating) return false;
       if (selectedLocation && v.city !== selectedLocation) return false;
+      return true;
+    });
+
+    let filteredMarkets = markets.filter((m) => {
+      if (query && !m.name.toLowerCase().includes(query.toLowerCase()) && !m.city.toLowerCase().includes(query.toLowerCase()) && !m.categories.some((c) => c.toLowerCase().includes(query.toLowerCase())) && !m.description.toLowerCase().includes(query.toLowerCase())) return false;
+      if (activeTab !== 'all' && activeTab !== 'markets') return false;
+      if (selectedLocation && m.city !== selectedLocation) return false;
+      if (selectedRating > 0 && m.rating < selectedRating) return false;
+      return true;
+    });
+
+    let filteredRiders = riders.filter((r) => {
+      if (query && !r.name.toLowerCase().includes(query.toLowerCase()) && !r.city.toLowerCase().includes(query.toLowerCase()) && !r.vehicle.toLowerCase().includes(query.toLowerCase())) return false;
+      if (activeTab !== 'all' && activeTab !== 'riders') return false;
+      if (selectedLocation && r.city !== selectedLocation) return false;
+      if (selectedRating > 0 && r.rating < selectedRating) return false;
+      return true;
+    });
+
+    let filteredErrands = errandPros.filter((e) => {
+      if (query && !e.name.toLowerCase().includes(query.toLowerCase()) && !e.specialty.toLowerCase().includes(query.toLowerCase()) && !e.skills.some((s) => s.toLowerCase().includes(query.toLowerCase())) && !e.city.toLowerCase().includes(query.toLowerCase())) return false;
+      if (activeTab !== 'all' && activeTab !== 'errands') return false;
+      if (selectedLocation && e.city !== selectedLocation) return false;
+      if (selectedRating > 0 && e.rating < selectedRating) return false;
       return true;
     });
 
@@ -77,9 +117,12 @@ export default function SearchPage() {
     if (sortBy === 'rating') {
       filteredProducts.sort((a, b) => b.rating - a.rating);
       filteredVendors.sort((a, b) => b.rating - a.rating);
+      filteredMarkets.sort((a, b) => b.rating - a.rating);
+      filteredRiders.sort((a, b) => b.rating - a.rating);
+      filteredErrands.sort((a, b) => b.rating - a.rating);
     }
 
-    return { products: filteredProducts, vendors: filteredVendors };
+    return { products: filteredProducts, vendors: filteredVendors, markets: filteredMarkets, riders: filteredRiders, errands: filteredErrands };
   }, [query, activeTab, selectedCategories, priceRange, selectedRating, selectedLocation, sortBy]);
 
   function toggleCategory(cat: string) {
@@ -98,7 +141,7 @@ export default function SearchPage() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          placeholder="Search products, vendors or services near you..."
+          placeholder="Search products, vendors, markets, riders, errands, or locations..."
           className="h-14 rounded-2xl border-border/60 bg-muted/30 pl-12 pr-12 text-base shadow-sm"
         />
         {query && (
@@ -143,6 +186,9 @@ export default function SearchPage() {
           { id: 'products', label: 'Products', icon: Package },
           { id: 'vendors', label: 'Vendors', icon: Store },
           { id: 'services', label: 'Services', icon: Wrench },
+          { id: 'markets', label: 'Markets', icon: MapPin },
+          { id: 'riders', label: 'Riders', icon: Bike },
+          { id: 'errands', label: 'Errand Pros', icon: ShoppingBag },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -254,7 +300,7 @@ export default function SearchPage() {
         <div>
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {results.products.length + results.vendors.length} results
+              {results.products.length + results.vendors.length + results.markets.length + results.riders.length + results.errands.length} results
               {query && ` for "${query}"`}
             </p>
             <Select value={sortBy} onValueChange={setSortBy}>
@@ -325,7 +371,112 @@ export default function SearchPage() {
             </div>
           )}
 
-          {results.products.length === 0 && results.vendors.length === 0 && (
+          {/* Markets results */}
+          {results.markets.length > 0 && (
+            <div className="mb-6">
+              <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+                <MapPin className="h-5 w-5 text-primary" /> Markets
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {results.markets.map((market, i) => (
+                  <motion.div key={market.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                    <Link href="/nearby">
+                      <Card className="overflow-hidden transition-all hover:shadow-lg">
+                        <div className="relative flex h-28 items-center justify-center bg-warm-orange-gradient">
+                          <MapPin className="h-10 w-10 text-white/90" />
+                          <div className="absolute bottom-2 left-3">
+                            <h3 className="font-semibold text-white">{market.name}</h3>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Navigation className="h-3 w-3" /> {market.distanceKm} km · {market.city}
+                          </p>
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="flex items-center gap-1 text-xs">
+                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> {market.rating}
+                            </span>
+                            <Badge className={isMarketOpenNow(market) ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}>
+                              {isMarketOpenNow(market) ? 'Open now' : 'Closed'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Riders results */}
+          {results.riders.length > 0 && (
+            <div className="mb-6">
+              <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+                <Bike className="h-5 w-5 text-primary" /> Delivery Riders
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {results.riders.map((rider, i) => (
+                  <motion.div key={rider.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                    <Card className="flex items-center gap-3 p-4 transition-all hover:shadow-lg">
+                      <img src={rider.avatar} alt={rider.name} className="h-12 w-12 rounded-xl object-cover" />
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-navy dark:text-white">{rider.name}</h3>
+                        <p className="text-xs text-muted-foreground">{rider.vehicle} · {rider.city}</p>
+                        <div className="mt-1 flex items-center gap-2 text-xs">
+                          <span className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> {rider.rating}
+                          </span>
+                          <span className="text-muted-foreground">·</span>
+                          <span className="text-muted-foreground">{formatCount(rider.deliveries)} deliveries</span>
+                        </div>
+                      </div>
+                      <Badge className={rider.available ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}>
+                        {rider.available ? 'Available' : 'Busy'}
+                      </Badge>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Errand pros results */}
+          {results.errands.length > 0 && (
+            <div className="mb-6">
+              <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold text-navy dark:text-white">
+                <ShoppingBag className="h-5 w-5 text-primary" /> Errand Professionals
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {results.errands.map((pro, i) => (
+                  <motion.div key={pro.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                    <Card className="flex items-center gap-3 p-4 transition-all hover:shadow-lg">
+                      <img src={pro.avatar} alt={pro.name} className="h-12 w-12 rounded-xl object-cover" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="text-sm font-semibold text-navy dark:text-white">{pro.name}</h3>
+                          <VerifiedBadge className="h-3 w-3" />
+                        </div>
+                        <p className="text-xs text-primary">{pro.specialty}</p>
+                        <div className="mt-1 flex items-center gap-2 text-xs">
+                          <span className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> {pro.rating}
+                          </span>
+                          <span className="text-muted-foreground">·</span>
+                          <span className="text-muted-foreground">{formatCount(pro.tasks)} tasks</span>
+                        </div>
+                      </div>
+                      <Badge className={pro.available ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'}>
+                        {pro.available ? 'Available' : 'Busy'}
+                      </Badge>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {results.products.length === 0 && results.vendors.length === 0 && results.markets.length === 0 && results.riders.length === 0 && results.errands.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <Search className="h-8 w-8 text-muted-foreground" />

@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { VerifiedBadge } from '@/components/verified-badge';
-import { categories, products, vendors, formatPrice, formatCount } from '@/lib/data';
+import { categories, products, vendors, formatPrice, formatCount, markets, isMarketOpenToday } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
@@ -402,6 +402,97 @@ export default function HomePage() {
               </Card>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* Nearby hub */}
+      <section className="bg-muted/30 py-16">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <SectionHeader
+            title="Near You"
+            subtitle="Markets, riders, and errand pros around you"
+            action={{ label: 'Explore nearby', href: '/nearby' }}
+          />
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                icon: MapPin,
+                title: 'Markets Near Me',
+                description: 'Connect to physical markets around you with GPS. See market days, hours, and what they sell.',
+                color: 'bg-primary/10 text-primary',
+                href: '/nearby?tab=markets',
+                cta: 'Find markets',
+              },
+              {
+                icon: Zap,
+                title: 'Nearby Delivery Riders',
+                description: 'Quickly find delivery personnel around you for pickups and deliveries, by bike, car, or van.',
+                color: 'bg-secondary/10 text-secondary',
+                href: '/nearby?tab=riders',
+                cta: 'Find riders',
+              },
+              {
+                icon: Sparkles,
+                title: 'Errand Professionals',
+                description: 'Hire someone nearby to run errands — shopping, document delivery, bill payments, and more.',
+                color: 'bg-amber-500/10 text-amber-600',
+                href: '/nearby?tab=errands',
+                cta: 'Hire a pro',
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <Card className="h-full p-6 transition-all hover:shadow-lg">
+                  <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${item.color}`}>
+                    <item.icon className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-display text-xl font-semibold text-navy dark:text-white">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
+                  <Button asChild variant="ghost" className="mt-4 px-0 text-primary hover:bg-transparent hover:text-primary/80">
+                    <Link href={item.href}>
+                      {item.cta} <ArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Market day notifications preview */}
+          {markets.filter((m) => isMarketOpenToday(m)).length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mt-6"
+            >
+              <Card className="border-primary/30 bg-primary/5 p-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-warm-orange-gradient text-white">
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-navy dark:text-white">
+                      Market day today
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {markets.filter((m) => isMarketOpenToday(m)).map((m) => m.name).join(', ')} {markets.filter((m) => isMarketOpenToday(m)).length === 1 ? 'is' : 'are'} active today. Visit for fresh food, clothing, electronics and more.
+                    </p>
+                  </div>
+                  <Button asChild size="sm" variant="outline" className="shrink-0">
+                    <Link href="/nearby">View</Link>
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+          )}
         </div>
       </section>
 

@@ -392,3 +392,281 @@ export function formatCount(count: number) {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
   return count.toString();
 }
+
+// Nearby delivery riders
+export interface Rider {
+  id: string;
+  name: string;
+  avatar: string;
+  vehicle: 'Bike' | 'Motorcycle' | 'Car' | 'Van';
+  rating: number;
+  deliveries: number;
+  distanceKm: number;
+  city: string;
+  state: string;
+  available: boolean;
+  rateFrom: number;
+  phone: string;
+}
+
+export const riders: Rider[] = [
+  {
+    id: 'r1',
+    name: 'Emeka Okoro',
+    avatar: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=200',
+    vehicle: 'Motorcycle',
+    rating: 4.9,
+    deliveries: 1240,
+    distanceKm: 1.2,
+    city: 'Lagos',
+    state: 'Lagos',
+    available: true,
+    rateFrom: 500,
+    phone: '+234 810 111 2222',
+  },
+  {
+    id: 'r2',
+    name: 'Fatima Bello',
+    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200',
+    vehicle: 'Car',
+    rating: 4.8,
+    deliveries: 890,
+    distanceKm: 2.8,
+    city: 'Abuja',
+    state: 'FCT',
+    available: true,
+    rateFrom: 1500,
+    phone: '+234 811 222 3333',
+  },
+  {
+    id: 'r3',
+    name: 'Samuel Adeyemi',
+    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200',
+    vehicle: 'Bike',
+    rating: 4.7,
+    deliveries: 560,
+    distanceKm: 0.8,
+    city: 'Lagos',
+    state: 'Lagos',
+    available: false,
+    rateFrom: 300,
+    phone: '+234 812 333 4444',
+  },
+  {
+    id: 'r4',
+    name: 'Grace Eze',
+    avatar: 'https://images.pexels.com/photos/5486199/pexels-photo-5486199.jpeg?auto=compress&cs=tinysrgb&w=200',
+    vehicle: 'Van',
+    rating: 4.9,
+    deliveries: 2100,
+    distanceKm: 4.5,
+    city: 'Port Harcourt',
+    state: 'Rivers',
+    available: true,
+    rateFrom: 2500,
+    phone: '+234 813 444 5555',
+  },
+];
+
+// Nearby errand professionals (PEP)
+export interface ErrandPro {
+  id: string;
+  name: string;
+  avatar: string;
+  specialty: string;
+  rating: number;
+  tasks: number;
+  distanceKm: number;
+  city: string;
+  state: string;
+  available: boolean;
+  rateFrom: number;
+  skills: string[];
+  phone: string;
+}
+
+export const errandPros: ErrandPro[] = [
+  {
+    id: 'e1',
+    name: 'Chioma Nwosu',
+    avatar: 'https://images.pexels.com/photos/5486199/pexels-photo-5486199.jpeg?auto=compress&cs=tinysrgb&w=200',
+    specialty: 'Errand Runner',
+    rating: 4.9,
+    tasks: 340,
+    distanceKm: 1.5,
+    city: 'Lagos',
+    state: 'Lagos',
+    available: true,
+    rateFrom: 1000,
+    skills: ['Grocery shopping', 'Bill payments', 'Document delivery', 'Queueing'],
+    phone: '+234 820 111 2222',
+  },
+  {
+    id: 'e2',
+    name: 'Yusuf Ibrahim',
+    avatar: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=200',
+    specialty: 'Dispatch Agent',
+    rating: 4.8,
+    tasks: 520,
+    distanceKm: 2.1,
+    city: 'Abuja',
+    state: 'FCT',
+    available: true,
+    rateFrom: 1500,
+    skills: ['Document delivery', 'Bank errands', 'Pickups', 'Government parastatals'],
+    phone: '+234 821 222 3333',
+  },
+  {
+    id: 'e3',
+    name: 'Aisha Mohammed',
+    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200',
+    specialty: 'Personal Shopper',
+    rating: 4.7,
+    tasks: 180,
+    distanceKm: 3.4,
+    city: 'Lagos',
+    state: 'Lagos',
+    available: false,
+    rateFrom: 1200,
+    skills: ['Grocery shopping', 'Market runs', 'Gift sourcing', 'Clothing pickup'],
+    phone: '+234 822 333 4444',
+  },
+  {
+    id: 'e4',
+    name: 'Daniel Okafor',
+    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200',
+    specialty: 'Errand Runner',
+    rating: 4.9,
+    tasks: 610,
+    distanceKm: 0.6,
+    city: 'Ibadan',
+    state: 'Oyo',
+    available: true,
+    rateFrom: 800,
+    skills: ['Bill payments', 'Document delivery', 'Pharmacy runs', 'Bank errands'],
+    phone: '+234 823 444 5555',
+  },
+];
+
+// Nearby physical markets with traditional market days
+export interface Market {
+  id: string;
+  name: string;
+  image: string;
+  city: string;
+  state: string;
+  address: string;
+  rating: number;
+  reviewCount: number;
+  distanceKm: number;
+  // ISO weekday index: 0=Sun ... 6=Sat. Empty array = open daily.
+  marketDays: number[];
+  openTime: string;
+  closeTime: string;
+  categories: string[];
+  description: string;
+}
+
+export const markets: Market[] = [
+  {
+    id: 'm1',
+    name: 'Itam Market',
+    image: 'https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg?auto=compress&cs=tinysrgb&w=800',
+    city: 'Uyo',
+    state: 'Akwa Ibom',
+    address: 'Itam Junction, Itu Road, Uyo',
+    rating: 4.4,
+    reviewCount: 320,
+    distanceKm: 3.2,
+    marketDays: [2, 5], // Tuesday & Friday
+    openTime: '7:00 AM',
+    closeTime: '6:00 PM',
+    categories: ['Fresh food', 'Clothing', 'Electronics', 'Household'],
+    description: 'One of the largest traditional markets in Akwa Ibom. Fresh produce, textiles, and household goods every market day.',
+  },
+  {
+    id: 'm2',
+    name: 'Mile 12 Market',
+    image: 'https://images.pexels.com/photos/1656663/pexels-photo-1656663.jpeg?auto=compress&cs=tinysrgb&w=800',
+    city: 'Lagos',
+    state: 'Lagos',
+    address: 'Mile 12, Ikorodu Road, Lagos',
+    rating: 4.3,
+    reviewCount: 890,
+    distanceKm: 5.8,
+    marketDays: [], // daily
+    openTime: '6:00 AM',
+    closeTime: '8:00 PM',
+    categories: ['Fresh food', 'Groceries', 'Spices', 'Livestock'],
+    description: 'Lagos\'s busiest fresh food market. Open daily with the best prices on produce, spices, and livestock.',
+  },
+  {
+    id: 'm3',
+    name: 'Wuse Market',
+    image: 'https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=800',
+    city: 'Abuja',
+    state: 'FCT',
+    address: 'Wuse Zone 5, Abuja',
+    rating: 4.5,
+    reviewCount: 540,
+    distanceKm: 2.4,
+    marketDays: [],
+    openTime: '8:00 AM',
+    closeTime: '9:00 PM',
+    categories: ['Clothing', 'Electronics', 'Fresh food', 'Crafts'],
+    description: 'Modern market in the heart of Abuja. Everything from fresh produce to fashion and electronics under one roof.',
+  },
+  {
+    id: 'm4',
+    name: 'Oyingbo Market',
+    image: 'https://images.pexels.com/photos/533280/pexels-photo-533280.jpeg?auto=compress&cs=tinysrgb&w=800',
+    city: 'Lagos',
+    state: 'Lagos',
+    address: 'Oyingbo, Lagos Island',
+    rating: 4.2,
+    reviewCount: 430,
+    distanceKm: 4.1,
+    marketDays: [1, 4], // Monday & Thursday
+    openTime: '6:30 AM',
+    closeTime: '7:00 PM',
+    categories: ['Fresh food', 'Groceries', 'Provisions', 'Household'],
+    description: 'Historic Lagos market known for wholesale provisions and fresh food. Peaks on Mondays and Thursdays.',
+  },
+  {
+    id: 'm5',
+    name: 'Bodija Market',
+    image: 'https://images.pexels.com/photos/1112080/pexels-photo-1112080.jpeg?auto=compress&cs=tinysrgb&w=800',
+    city: 'Ibadan',
+    state: 'Oyo',
+    address: 'Bodija, Ibadan',
+    rating: 4.3,
+    reviewCount: 280,
+    distanceKm: 2.0,
+    marketDays: [],
+    openTime: '7:00 AM',
+    closeTime: '7:00 PM',
+    categories: ['Fresh food', 'Groceries', 'Tubers', 'Grains'],
+    description: 'Ibadan\'s premier food market. Famous for tubers, grains, and farm-fresh produce at wholesale prices.',
+  },
+];
+
+export const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+export const weekdayShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export function isMarketOpenToday(market: Market, date: Date = new Date()): boolean {
+  if (market.marketDays.length === 0) return true;
+  return market.marketDays.includes(date.getDay());
+}
+
+export function isMarketOpenNow(market: Market, date: Date = new Date()): boolean {
+  if (!isMarketOpenToday(market, date)) return false;
+  const now = date.toLocaleTimeString('en-NG', { hour12: false, hour: '2-digit', minute: '2-digit' });
+  const open = market.openTime.replace(/[:\s]/g, '').padStart(4, '0');
+  const close = market.closeTime.replace(/[:\s]/g, '').padStart(4, '0');
+  return now >= open && now <= close;
+}
+
+export function formatMarketDays(market: Market): string {
+  if (market.marketDays.length === 0) return 'Open daily';
+  return market.marketDays.map((d) => weekdayNames[d]).join(' & ');
+}
