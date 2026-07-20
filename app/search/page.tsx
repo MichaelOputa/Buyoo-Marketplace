@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -82,6 +82,12 @@ export default function SearchPage() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [sortBy, setSortBy] = useState('relevance');
+
+  useEffect(() => {
+    setQuery(searchParams.get('q') || '');
+    const cat = searchParams.get('cat');
+    setSelectedCategories(cat ? [cat] : []);
+  }, [searchParams]);
 
   const results = useMemo(() => {
     let filteredProducts = products.filter((p) => {
