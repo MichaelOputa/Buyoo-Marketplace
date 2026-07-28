@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,7 +71,7 @@ const searchSuggestions = [
   'Home renovation', 'Jollof rice', 'Samsung TV', 'Real estate',
 ];
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
@@ -701,5 +701,28 @@ function DiscoverLanding() {
         </div>
       </section>
     </div>
+  );
+}
+
+function SearchPageFallback() {
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
+      <div className="relative mb-6">
+        <div className="h-12 w-full animate-pulse rounded-full bg-muted" />
+      </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchPageFallback />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
