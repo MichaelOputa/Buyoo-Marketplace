@@ -80,7 +80,7 @@ function SearchPageContent() {
   const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState(0);
-  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<string>('any');
   const [sortBy, setSortBy] = useState('relevance');
 
   useEffect(() => {
@@ -96,7 +96,7 @@ function SearchPageContent() {
       if (selectedCategories.length > 0 && !selectedCategories.includes(p.category)) return false;
       if (p.price < priceRange[0] || p.price > priceRange[1]) return false;
       if (selectedRating > 0 && p.rating < selectedRating) return false;
-      if (selectedLocation && p.city !== selectedLocation) return false;
+      if (selectedLocation !== 'any' && p.city !== selectedLocation) return false;
       return true;
     });
 
@@ -106,14 +106,14 @@ function SearchPageContent() {
       if (activeTab === 'services' && v.category !== 'Services') return false;
       if (selectedCategories.length > 0 && !selectedCategories.includes(v.category)) return false;
       if (selectedRating > 0 && v.rating < selectedRating) return false;
-      if (selectedLocation && v.city !== selectedLocation) return false;
+      if (selectedLocation !== 'any' && v.city !== selectedLocation) return false;
       return true;
     });
 
     let filteredMarkets = markets.filter((m) => {
       if (query && !m.name.toLowerCase().includes(query.toLowerCase()) && !m.city.toLowerCase().includes(query.toLowerCase()) && !m.categories.some((c) => c.toLowerCase().includes(query.toLowerCase())) && !m.description.toLowerCase().includes(query.toLowerCase())) return false;
       if (activeTab !== 'all' && activeTab !== 'markets') return false;
-      if (selectedLocation && m.city !== selectedLocation) return false;
+      if (selectedLocation !== 'any' && m.city !== selectedLocation) return false;
       if (selectedRating > 0 && m.rating < selectedRating) return false;
       return true;
     });
@@ -260,7 +260,7 @@ function SearchPageContent() {
                     <SelectValue placeholder="Any location" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any location</SelectItem>
+                    <SelectItem value="any">Any location</SelectItem>
                     <SelectItem value="Lagos">Lagos</SelectItem>
                     <SelectItem value="Abuja">Abuja</SelectItem>
                     <SelectItem value="Ibadan">Ibadan</SelectItem>

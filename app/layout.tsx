@@ -77,15 +77,6 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
-export const viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FF7A00' },
-    { media: '(prefers-color-scheme: dark)', color: '#14213D' },
-  ],
-  width: 'device-width',
-  initialScale: 1,
-};
-
 export default function RootLayout({
   children,
 }: {

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
@@ -14,6 +16,8 @@ import {
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { AnimatedBackground } from '@/components/animated-background';
 import { cn } from '@/lib/utils';
 
@@ -57,12 +61,83 @@ const accountTypes: {
 ];
 
 export default function SignupPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<'select' | 'form'>('select');
   const [accountType, setAccountType] = useState<AccountType | null>(null);
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', phone: '', businessName: '', category: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function selectType(type: AccountType) {
     setAccountType(type);
     setStep('form');
+  }
+
+  async function handleOAuth(provider: 'google' | 'apple') {
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(searchParams.get('redirect') || '/')}`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo },
+    });
+
+    if (error) {
+      setError(error.message);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
+
+    const supabase = createClient();
+    const role =
+      accountType === 'customer'
+        ? 'CUSTOMER'
+        : accountType === 'vendor'
+        ? 'VENDOR'
+        : accountType === 'broker'
+        ? 'BROKER'
+        : 'CUSTOM_VENDOR';
+
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        data: {
+          name: form.name,
+          role,
+          phone: form.phone || undefined,
+          businessName: form.businessName || undefined,
+          category: form.category || undefined,
+        },
+      },
+    });
+
+    setLoading(false);
+
+    if (error) {
+      setError(error.message || 'Unable to create account.');
+      return;
+    }
+
+    if (data.session) {
+      router.push('/');
+      return;
+    }
+
+    router.push('/auth/login');
   }
 
   return (
@@ -167,14 +242,86 @@ export default function SignupPage() {
                     </div>
                   )}
 
-                  <p className="mb-4 text-center text-sm font-medium text-muted-foreground">
-                    Sign up with your preferred provider
-                  </p>
+                  <form className="space-y-4" onSubmit={handleSubmit}>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full name</Label>
+                        <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={form.password}
+                            onChange={(e) => setForm({ ...form, password: e.target.value })}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-primary hover:text-primary/80"
+                            onClick={() => setShowPassword((current) => !current)}
+                          >
+                            {showPassword ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Confirm password</Label>
+                        <div className="relative">
+                          <Input
+                            id="confirmPassword"
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            value={form.confirmPassword}
+                            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-primary hover:text-primary/80"
+                            onClick={() => setShowConfirmPassword((current) => !current)}
+                          >
+                            {showConfirmPassword ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone number</Label>
+                        <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="businessName">Business name</Label>
+                        <Input id="businessName" value={form.businessName} onChange={(e) => setForm({ ...form, businessName: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Input id="category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                    </div>
+                    {error ? <p className="text-sm text-destructive">{error}</p> : null}
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? 'Creating account...' : 'Create account'}
+                    </Button>
+                  </form>
 
-                  <div className="space-y-3">
-                    <SocialButton provider="google" />
-                    <SocialButton provider="apple" />
-                    <SocialButton provider="facebook" />
+                  <div className="mt-6 flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="h-px flex-1 bg-border" />
+                    <span>or continue with</span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+
+                  <div className="mt-6 space-y-3">
+                    <SocialButton provider="google" onClick={() => handleOAuth('google')} />
+                    <SocialButton provider="apple" onClick={() => handleOAuth('apple')} />
                   </div>
 
                   <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -198,13 +345,16 @@ export default function SignupPage() {
   );
 }
 
-function SocialButton({ provider }: { provider: 'google' | 'apple' | 'facebook' }) {
-  const labels = { google: 'Sign up with Google', apple: 'Sign up with Apple', facebook: 'Sign up with Facebook' };
+function SocialButton({ provider, onClick }: { provider: 'google' | 'apple'; onClick: () => void }) {
+  const labels = { google: 'Sign up with Google', apple: 'Sign up with Apple' };
   return (
     <Button
       variant="outline"
       className="h-12 w-full rounded-xl justify-center"
-      onClick={(e) => e.preventDefault()}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
     >
       <ProviderIcon provider={provider} />
       <span className="ml-2 text-sm font-medium">{labels[provider]}</span>

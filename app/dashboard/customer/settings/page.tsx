@@ -158,7 +158,6 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <ConnectedAccountRow provider="Google" email="john@example.com" connected />
                   <ConnectedAccountRow provider="Apple" email="Not connected" connected={false} />
-                  <ConnectedAccountRow provider="Facebook" email="john.fb@example.com" connected />
                 </div>
               </Card>
             </motion.div>

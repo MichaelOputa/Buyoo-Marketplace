@@ -1,13 +1,62 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase-client';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { AnimatedBackground } from '@/components/animated-background';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleOAuth(provider: 'google' | 'apple') {
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(searchParams.get('redirect') || '/')}`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo },
+    });
+
+    if (error) {
+      setError(error.message);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.password,
+    });
+
+    setLoading(false);
+
+    if (error || !data.user) {
+      setError(error?.message || 'Unable to sign in.');
+      return;
+    }
+
+    const redirect = searchParams.get('redirect') || '/';
+    router.push(redirect);
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <AnimatedBackground variant="soft" />
@@ -32,10 +81,59 @@ export default function LoginPage() {
               </p>
             </div>
 
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-primary hover:text-primary/80"
+                    onClick={() => setShowPassword((current) => !current)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                    />
+                    Remember me
+                  </label>
+                  <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
+              {error ? <p className="text-sm text-destructive">{error}</p> : null}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign in'}
+              </Button>
+            </form>
+
+            <div className="my-6 flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="h-px flex-1 bg-border" />
+              <span>or continue with</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
             <div className="space-y-3">
-              <SocialButton provider="google" />
-              <SocialButton provider="apple" />
-              <SocialButton provider="facebook" />
+              <SocialButton provider="google" onClick={() => handleOAuth('google')} />
+              <SocialButton provider="apple" onClick={() => handleOAuth('apple')} />
             </div>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -56,13 +154,16 @@ export default function LoginPage() {
   );
 }
 
-function SocialButton({ provider }: { provider: 'google' | 'apple' | 'facebook' }) {
-  const labels = { google: 'Continue with Google', apple: 'Continue with Apple', facebook: 'Continue with Facebook' };
+function SocialButton({ provider, onClick }: { provider: 'google' | 'apple'; onClick: () => void }) {
+  const labels = { google: 'Continue with Google', apple: 'Continue with Apple' };
   return (
     <Button
       variant="outline"
       className="h-12 w-full rounded-xl justify-center"
-      onClick={(e) => e.preventDefault()}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
     >
       <ProviderIcon provider={provider} />
       <span className="ml-2 text-sm font-medium">{labels[provider]}</span>

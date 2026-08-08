@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  VENDOR
+  BROKER
+  CUSTOM_VENDOR
+  ADMIN
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String?
+  phone         String?
+  role          Role      @default(CUSTOMER)
+  avatarUrl     String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  vendors       Vendor[]
+  products      Product[]
+  orders        Order[]   @relation("BuyerOrders")
+  reviews       Review[]
+  wishlist      Wishlist[]
+  sentMessages  Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  follows       Follow[]  @relation("Follower")
+}
+
+model Vendor {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  businessName  String
+  handle        String   @unique
+  bio           String?
+  location      String?
+  lat           Float?
+  lng           Float?
+  category      String?
+  logoUrl       String?
+  coverUrl      String?
+  whatsapp      String?
+  phone         String?
+  email         String?
+  website       String?
+  followerCount Int      @default(0)
+  rating        Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  products      Product[]
+  orders        Order[]
+  advertisements Advertisement[]
+  follows       Follow[]
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  vendorId        String
+  vendor          Vendor        @relation(fields: [vendorId], references: [id])
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id])
+  title           String
+  description     String
+  category        String
+  price           Float
+  discountPrice   Float?
+  images          String[]
+  condition       String        @default("New")
+  deliveryScope   String        @default("Local")
+  buyooProtected  Boolean       @default(false)
+  quantity        Int           @default(1)
+  isSponsored     Boolean       @default(false)
+  status          ProductStatus @default(ACTIVE)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  orders          Order[]
+  reviews         Review[]
+  wishlist        Wishlist[]
+  advertisements  Advertisement[]
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  buyerId           String
+  buyer             User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  vendorId          String
+  vendor            Vendor      @relation(fields: [vendorId], references: [id])
+  productId         String
+  product           Product     @relation(fields: [productId], references: [id])
+  quantity          Int         @default(1)
+  totalPrice        Float
+  status            OrderStatus @default(PENDING)
+  deliveryAddress   String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id              String    @id @default(cuid())
+  senderId        String
+  sender          User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId      String
+  receiver        User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  conversationId  String
+  body            String
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
+}
+
+model Conversation {
+  id              String   @id @default(cuid())
+  participantIds  String[]
+  lastMessageAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  slug         String   @unique
+  listingCount Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+model Market {
+  id         String   @id @default(cuid())
+  name       String
+  location   String
+  lat        Float
+  lng        Float
+  marketDays String[]
+  openHours  String
+  createdAt  DateTime @default(now())
+}
+
+model Rider {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  vehicleType String
+  isAvailable Boolean  @default(true)
+  currentLat  Float?
+  currentLng  Float?
+  createdAt   DateTime @default(now())
+}
+
+model ErrandPro {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  services     String[]
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model Advertisement {
+  id         String   @id @default(cuid())
+  vendorId   String
+  vendor     Vendor   @relation(fields: [vendorId], references: [id])
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id])
+  placement  String
+  startDate  DateTime
+  endDate    DateTime
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model Follow {
+  id         String   @id @default(cuid())
+  followerId String
+  follower   User     @relation("Follower", fields: [followerId], references: [id])
+  vendorId   String
+  vendor     Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt  DateTime @default(now())
+}

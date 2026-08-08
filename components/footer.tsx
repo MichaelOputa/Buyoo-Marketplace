@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Logo } from '@/components/logo';
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 
 const footerLinks = {
   Company: [
@@ -44,7 +44,6 @@ export function Footer() {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: Facebook, href: '#' },
                 { icon: Instagram, href: '#' },
                 { icon: Twitter, href: '#' },
                 { icon: Youtube, href: '#' },
